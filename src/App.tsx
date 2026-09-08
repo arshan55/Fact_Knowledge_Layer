@@ -118,7 +118,7 @@ export function App() {
   const isEmpty = documents.length === 0;
 
   return (
-    <div className="flex min-h-screen bg-[#FAFBFB] text-[#2B2B2B]">
+    <div className="flex min-h-screen bg-[#0B0F17] text-slate-100">
       <Sidebar
         workspaces={workspaces}
         activeWorkspaceId={activeWorkspaceId}
@@ -149,13 +149,13 @@ export function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4"
+                className="fixed inset-0 z-50 bg-[#0B0F17]/90 backdrop-blur-sm flex flex-col items-center justify-center gap-4"
               >
-                <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
-                <div className="text-[15px] font-semibold text-[#374151] text-center max-w-sm">
+                <Loader2 className="w-10 h-10 text-emerald-400 animate-spin" />
+                <div className="text-[15px] font-semibold text-slate-200 text-center max-w-sm">
                   {processingMsg || 'Processing…'}
                 </div>
-                <div className="text-[13px] text-[#9CA3AF]">This may take a moment for large PDFs</div>
+                <div className="text-[13px] text-slate-500">This may take a moment for large PDFs</div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -210,26 +210,26 @@ export function App() {
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}
                 className="p-6 space-y-5">
                 {documents.length > 0 && (
-                  <div className="rounded-2xl border border-[#E5E5E9] bg-white p-5 shadow-sm">
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF] mb-4">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5">
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-4">
                       Documents in {activeWorkspace.emoji} {activeWorkspace.name} ({documents.length})
                     </h2>
                     <div className="space-y-2">
                       {documents.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F9FAFB] border border-[#E5E5E9]">
+                        <div key={doc.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-800/50 transition">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                              <span className="text-[10px] font-bold text-emerald-700">PDF</span>
+                            <div className="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center shrink-0">
+                              <span className="text-[10px] font-bold text-emerald-400">PDF</span>
                             </div>
                             <div>
-                              <div className="text-[13px] font-semibold text-[#111111]">{doc.name}</div>
-                              <div className="text-[12px] text-[#9CA3AF]">
+                              <div className="text-[13px] font-semibold text-slate-100">{doc.name}</div>
+                              <div className="text-[12px] text-slate-400">
                                 {doc.pageCount} pages · {doc.extractedFacts.length} facts · {doc.uploadedAt}
                               </div>
                             </div>
                           </div>
                           {doc.fileSize && (
-                            <span className="text-[12px] font-mono text-[#6B7280] bg-white px-2.5 py-1 rounded-full border border-[#E5E5E9]">
+                            <span className="text-[12px] font-mono text-slate-400 bg-slate-900 px-2.5 py-1 rounded-full border border-slate-700">
                               {doc.fileSize}
                             </span>
                           )}
@@ -263,7 +263,7 @@ export function App() {
           </AnimatePresence>
         </main>
 
-        <footer className="border-t border-[#E5E5E9] bg-white px-6 py-3 text-[11px] text-[#9CA3AF] font-medium">
+        <footer className="border-t border-slate-800 bg-[#0B0F17] px-6 py-3 text-[11px] text-slate-500 font-mono">
           Fact Knowledge Layer · Superjoin Engineering Intern Assignment · Vite + React + TypeScript
         </footer>
       </div>
@@ -293,15 +293,15 @@ const EmptyWorkspacePrompt: React.FC<{
 }> = ({ workspaceName, emoji, onGoToUpload }) => (
   <div className="flex flex-col items-center justify-center h-full py-20 px-6 text-center">
     <div className="text-6xl mb-5">{emoji}</div>
-    <h2 className="text-[20px] font-bold text-[#111111] mb-2">{workspaceName}</h2>
-    <p className="text-[14px] text-[#6B7280] max-w-sm mb-8 leading-relaxed">
+    <h2 className="text-[20px] font-bold text-slate-100 mb-2">{workspaceName}</h2>
+    <p className="text-[14px] text-slate-400 max-w-sm mb-8 leading-relaxed">
       This workspace is currently empty. Upload PDF documents to extract, ground, and reconcile financial facts.
     </p>
 
     <div className="flex flex-col items-center gap-3 w-full max-w-xs">
       <button
         onClick={onGoToUpload}
-        className="w-full flex items-center justify-center gap-2 px-6 py-3 text-[14px] font-semibold rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition"
+        className="w-full flex items-center justify-center gap-2 px-6 py-3 text-[14px] font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition"
       >
         <Upload className="w-4 h-4" />
         Upload PDF Documents
