@@ -62,13 +62,13 @@ export const ShowcasePanel: React.FC<ShowcasePanelProps> = ({
       <div className="rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-6 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[12px] font-bold tracking-wide uppercase border border-emerald-500/30">
-            <Sparkles className="w-3.5 h-3.5" /> Mandatory Submission Requirements Showcase
+            <Sparkles className="w-3.5 h-3.5" /> Evidence Review Workspace
           </div>
           <h1 className="text-2xl font-black tracking-tight">
-            The Four Core Fact Knowledge Cases
+            Trace Every Fact Back to Its Source
           </h1>
           <p className="text-emerald-100/80 text-[14px] max-w-3xl leading-relaxed">
-            Demonstrating verbatim grounding, two-stage claim extraction, hallucination guardrails, and context-window reconciliation across real ingested PDF documents.
+            Compare grounded claims across documents, surface conflicts, and understand how context changes the meaning of a fact.
           </p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Upload } from 'lucide-react';
 
@@ -47,6 +47,11 @@ export function App() {
   const [isProcessing, setIsProcessing]           = useState(false);
   const [processingMsg, setProcessingMsg]         = useState('');
   const [activeRelationshipId, setActiveRelationshipId] = useState<string>(STARTER_WORKSPACES[0]?.relationships[0]?.id ?? '');
+  const workspacesRef = useRef(workspaces);
+
+  useEffect(() => {
+    workspacesRef.current = workspaces;
+  }, [workspaces]);
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) ?? workspaces[0];
   const { documents, facts, relationships } = activeWorkspace;
@@ -95,14 +100,21 @@ export function App() {
     try {
       const newFacts = await extractFactsFromDocument(newDoc, apiKey, apiProvider);
       newDoc.extractedFacts = newFacts;
-      const updatedFacts = [...facts, ...newFacts];
+      const currentWorkspaces = workspacesRef.current;
+      const currentWorkspace = currentWorkspaces.find(w => w.id === activeWorkspaceId);
+      if (!currentWorkspace) return;
+
+      const updatedFacts = [...currentWorkspace.facts, ...newFacts];
       // Incremental Ingestion — reconcile ONLY new claims against existing claims
-      const updatedRels = reconcileIncremental(newFacts, facts, relationships);
-      updateWorkspace(activeWorkspaceId, {
-        documents: [...documents, newDoc],
+      const updatedRels = reconcileIncremental(newFacts, currentWorkspace.facts, currentWorkspace.relationships);
+      const nextWorkspaces = currentWorkspaces.map(workspace => workspace.id === activeWorkspaceId ? {
+        ...workspace,
+        documents: [...currentWorkspace.documents, newDoc],
         facts: updatedFacts,
         relationships: updatedRels
-      });
+      } : workspace);
+      workspacesRef.current = nextWorkspaces;
+      setWorkspaces(nextWorkspaces);
       const latest = updatedRels[updatedRels.length - 1];
       if (latest) setActiveRelationshipId(latest.id);
     } catch (err) {

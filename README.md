@@ -1,146 +1,138 @@
-# Fact Knowledge Layer (Superjoin Assignment)
+# Fact Knowledge Layer
 
-A production-ready **Fact Knowledge Layer** system that ingests unstructured PDFs, extracts grounded claims with exact verbatim source evidence, enforces hallucination guardrails, and reconciles cross-document relationships (Corroboration, Contradiction, Contextual Reconciliation, and Handled Extraction Failures).
+Fact Knowledge Layer is a client-side React application for turning PDF documents into reviewable, source-backed facts. It extracts values and statements, keeps the page-level evidence for each fact, and compares facts across documents.
 
----
+The project includes Delhivery logistics documents and India macroeconomy documents as starter data. New PDFs can also be uploaded from the Document Hub.
 
-## 🚀 Quick Start & Setup Instructions
+## Live Demo
 
-### Prerequisites
-- **Node.js**: v18.x or higher (v20/v22 recommended)
-- **npm**: v9.x or higher
+[https://fact-ochre.vercel.app/](https://fact-ochre.vercel.app/)
 
-### Installation & Running Locally
+## Demo Video
+
+Add the demo video link here: `[Insert Link Here]`
+
+## Run Locally
+
+Requirements:
+
+- Node.js 18 or newer
+- npm 9 or newer
 
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Start local development server
 npm run dev
 ```
-Open **`http://localhost:5173/`** in your browser.
 
-### Build Verification
+Open `http://localhost:5173/`.
+
+To run the production build check:
+
 ```bash
-# Verify TypeScript & production build
 npm run build
 ```
 
----
+## How It Works
 
-## 🎥 Video Demo Link
+```mermaid
+flowchart LR
+    A[PDF upload] --> B[PDF.js page text extraction]
+    B --> C[Stage A heuristic extraction]
+    C --> D{API key configured?}
+    D -- No --> E[Grounding verification]
+    D -- Yes --> F[Optional Stage B LLM extraction]
+    F --> E
+    E --> G[Accepted grounded facts]
+    E --> H[Rejected or low-confidence facts]
+    G --> I[Incremental reconciliation]
+    I --> J[Corroboration]
+    I --> K[Contradiction]
+    I --> L[Context reconciliation]
+    G --> M[Matrix, document view, timeline]
+    H --> N[Failure review]
+```
 
-- **Demo Video**: `[Insert Link Here]`
+The normal path does not require a paid API. Stage A uses deterministic patterns for metrics, percentages, dates, common table layouts, and status statements. An OpenAI or Gemini key can be added for optional semantic extraction from prose.
 
----
+Before a fact is stored, its quote is checked against the extracted text of the cited page. Facts that cannot be grounded are rejected. Accepted facts retain their document ID, filename, page number, quote, extraction stage, and confidence score.
 
-## 📐 Data Model Architecture
+## Main Views
 
-The system models unstructured knowledge into structured `Claim` objects grounded directly to verbatim source spans, and links them via `Relationship` objects.
+- **Dashboard**: workspace counts and representative relationships.
+- **Document Hub**: upload one or more PDFs and view processing status.
+- **Document View**: inspect page text and the facts grounded on that page.
+- **Fact Matrix**: search facts and filter relationships across documents.
+- **Timeline**: group dated facts by reporting period and inspect changes over time.
+- **Showcase**: review corroboration, contradiction, context reconciliation, and handled extraction cases.
 
-### `Claim` Object Schema
-```typescript
-interface Claim {
+## Data Model
+
+A `GroundedFact` contains the extracted entity, attribute, value, normalized value, time period, scope, and an evidence object:
+
+```ts
+type GroundedFact = {
   id: string;
-  subject: string;            // e.g. "Delhivery Limited", "Reserve Bank of India"
-  entity: string;             // canonical entity name
-  predicate: string;          // e.g. "Revenue", "Real GDP Growth", "Inflation"
-  attribute: string;          // extracted attribute label
-  value: string;              // verbatim extracted value ("₹8,144 Cr", "6.5%")
-  normalizedValue: number;    // normalized numeric value for comparison (81440000000)
-  valueType: "numeric" | "temporal" | "categorical" | "relational" | "textual";
-  unit?: string;              // normalized unit ("INR", "USD", "%", "INR Crore")
-  temporalScope?: string;     // e.g. "FY2024", "Q4 FY24", "as of March 2024"
-  spatialScope?: string;      // jurisdiction/scope e.g. "Consolidated", "Domestic"
+  entity: string;
+  attribute: string;
+  value: string;
+  normalizedValue: number | string | boolean;
+  timePeriod?: string;
+  scope?: string;
   evidence: {
     documentId: string;
     documentName: string;
     pageNumber: number;
-    verbatimQuote: string;    // EXACT verbatim quoted text as it appears in the PDF
-    lineSnippet?: string;
-    confidenceScore: number;  // 0.0 - 1.0 confidence score
+    verbatimQuote: string;
+    confidenceScore: number;
   };
-  extractionStage: "stage_a_structural" | "stage_b_llm";
-  groundingVerified: boolean; // Result of verbatim string verification guardrail
-  extractedAt: string;
-}
+};
 ```
 
-### `Relationship` Object Schema
-```typescript
-interface Relationship {
-  id: string;
-  claimAId: string;
-  claimBId?: string;
-  relationType: "CORROBORATED" | "CONTRADICTION" | "RECONCILED_BY_CONTEXT" | "FAILURE_HANDLED";
-  conflictDimension?: "time" | "scope" | "unit" | "ocr_ambiguity" | "semantic" | "status_change";
-  reasoning: string;         // Human-readable explanation for why relation holds
-  resolutionStrategy?: string;
-  confidence: number;
-}
+Relationships connect two facts when their entity and attribute are similar. The reconciler classifies them as `CORROBORATED`, `CONTRADICTION`, `RECONCILED_BY_CONTEXT`, or `FAILURE_HANDLED`.
+
+## Engineering Decisions And Trade-offs
+
+### Client-side processing
+
+PDF parsing and the default extraction path run in the browser. This keeps the prototype easy to run and avoids sending documents to a server by default. The trade-off is that very large PDFs use the browser's memory and processing time.
+
+### Heuristics before an LLM
+
+The first extraction pass is deterministic and cheap. It is easier to debug and makes the source of a numeric fact clear. The optional LLM pass helps with prose, but it is slower, depends on an API key, and can still produce quotes that fail grounding verification.
+
+### Evidence as a hard check
+
+A fact is not accepted only because an extractor produced it. The quote must match the source page text. This reduces unsupported claims, but it can reject valid facts when a PDF has unusual spacing, broken text order, or scanned pages.
+
+### Incremental reconciliation
+
+When a new PDF is uploaded, its facts are compared with the existing workspace facts. Existing relationships are kept instead of recomputing the whole workspace. This makes repeated uploads faster and preserves the user's review state, but the current prototype does not yet deduplicate every semantically identical fact.
+
+### Rule-based relationship classification
+
+The reconciler uses value, time, scope, unit, and status fields to explain relationships. This keeps decisions auditable. The trade-off is that an ambiguous entity name or an unusual metric label can prevent a match even when a human would recognize the connection.
+
+## Limitations And Next Steps
+
+- Scanned image PDFs need OCR; the current parser depends on embedded PDF text.
+- Complex multi-column tables can lose their original reading order during extraction.
+- Entity matching is lightweight and would benefit from a proper entity registry.
+- Large workspaces would benefit from stronger deduplication and background processing.
+- The next extraction improvement would be coordinate-aware table parsing so labels, units, and values stay connected.
+
+## Project Structure
+
+```text
+src/
+  components/       React views and interaction panels
+  data/             starter workspaces and example facts
+  lib/
+    pdfParser.ts    PDF.js page text extraction
+    factExtractor.ts  heuristic and optional LLM extraction
+    reconciler.ts   cross-document relationship logic
+  types/            shared TypeScript data types
 ```
 
----
+## Development Tools
 
-## 🧠 Core Technical Innovations
-
-### 1. Verbatim Grounding Verification Guardrail (Non-Negotiable Trust Mechanism)
-Before any extracted claim is accepted into the knowledge layer, its `raw_text` / `verbatimQuote` is checked against the raw extracted text of the source document page (`verifyVerbatimGrounding`).
-- Claims that fail verbatim matching are rejected as hallucination attempts.
-- Rejection metrics (`rejectedFactsCount`) are tracked per document and surfaced in the application.
-
-### 2. Dynamic Two-Stage Extraction Engine
-- **Stage A (Structural / High-Precision)**: Pulls metrics, numerical values, dates, percentages, and table headers using PDF structure parsing and deterministic regex pattern matchers.
-- **Stage B (Semantic / LLM)**: Pulls complex claims from prose using GPT-4o-mini / Gemini-2.0-Flash, forcing the LLM to output the exact verbatim sentence alongside the claim for post-extraction grounding verification.
-
-### 3. Cross-Document Reconciliation Logic
-- **Corroboration**: Claims with matching (Entity, Predicate, Scope, Time) and normalized value match within 5%.
-- **Genuine Contradiction**: Same Entity, Predicate, Scope, and Time with conflicting normalized values.
-- **Reconciled by Context**: Differing values explained by different time periods (Q3 vs Full Year), scope (Standalone vs Consolidated), or state transitions over time.
-- **Handled Extraction Failure**: Low confidence (<0.75) or unbounded metric ambiguity flagged with automatic header scope fallback inspection.
-
-### 4. Incremental Ingestion Pipeline
-When a new PDF document is uploaded:
-1. Claims are extracted ONLY from the new document.
-2. New claims are verified against source verbatim text.
-3. Incremental reconciliation (`reconcileIncremental`) compares new claims against existing claims without re-running existing-vs-existing comparisons.
-
----
-
-## 🌟 The Four Required Cases Showcase
-
-The application features a dedicated **4 Showcase Cases** tab displaying representative examples directly from the ingested real PDF datasets (**Delhivery** logistics & **India Macroeconomy**):
-
-1. **Case 1: Corroboration**: Fresh Issue Share Allocation ($82.15M shares) corroborated across Prospectus 2022 and Annual Report FY24.
-2. **Case 2: Genuine Contradiction**: Differing PAT & EBITDA figures in internal vs audited releases prior to audit adjustments.
-3. **Case 3: Reconciled by Context**: Delhivery Revenue growth from ₹6,881 Cr (FY22) to ₹8,144 Cr (FY24) reconciled by time period windows.
-4. **Case 4: Handled Extraction Failure**: Raw header metric "1,200" with missing unit context flagged with low confidence and resolved via header scope analysis.
-
----
-
-## 📊 Available UI Views
-
-1. **Dashboard Overview**: Key metrics breakdown, corroboration stats, and active context reconciler inspector.
-2. **4 Showcase Cases**: Direct side-by-side evidence inspection of the four required submission cases.
-3. **Documents Hub**: Upload PDFs and view ingested page counts and claim extraction verification stats.
-4. **Cross-Document Fact Matrix**: Searchable and filterable matrix of all grounded claims across documents with verbatim source quote spotlight modal.
-5. **Timeline View**: Chronological sequence of entity state transitions and metric evolutions across document dates.
-
----
-
-## 📝 Limitations & Next Steps
-
-- **Current Limitation**: Native PDF text parsing relies on embedded text objects. Scanned image PDFs require an OCR engine pre-processing pass (e.g., Tesseract or AWS Textract).
-- **Next Steps**: Multi-nested hierarchical financial table structure decomposition and graph vector indexing for enterprise PDF repositories.
-
----
-
-## 🛠️ AI Tools Used
-
-- **Claude Sonnet 4.6 & Gemini 3.6 Flash**: Core architecture design, UI components, two-stage fact extraction heuristics, and test suite generation.
-- **Vite + React + TailwindCSS + Lucide Icons + Framer Motion**: Web interface.
-
-## Live Demo
-
-- **Live App**: [https://fact-ochre.vercel.app/](https://fact-ochre.vercel.app/)
+The interface uses React, TypeScript, Vite, Tailwind CSS, Lucide icons, and Framer Motion. PDF text extraction uses PDF.js. Optional semantic extraction supports OpenAI and Gemini when the user supplies a key through the settings panel.

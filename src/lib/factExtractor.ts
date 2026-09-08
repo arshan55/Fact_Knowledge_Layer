@@ -81,6 +81,11 @@ function extractFactsWithHeuristics(doc: ParsedDocument): GroundedFact[] {
   const pctRe =
     /([A-Za-z][^:\n]{3,50}?)\s+(?:of|at|by|grew|declined|increased|decreased|contracted)\s+([\d.]+\s*%(?:\s*(?:YoY|QoQ|year-on-year|quarter-on-quarter))?)/gi;
 
+  // Table and presentation layouts often put the metric label before a value
+  // without using a verb, for example "FY24 revenue from services ₹8,142 Cr".
+  const labeledMetricRe =
+    /\b(revenue(?:\s+from\s+[a-z ]+)?|ebitda(?:\s+margin)?|pat(?:\s+margin)?|express\s+parcel\s+shipments|active\s+customers|pin[- ]?code\s+reach|freight\s+tonnage|fleet\s+size|team\s+size|gateways|processing\s+cent(?:er|re)s|freight\s+service\s+cent(?:er|re)s)\b[^.]{0,90}?\(?[\d,]+(?:\.\d+)?\)?\s*(?:crore|cr|lakh|million|billion|thousand|bn|mn|M|B|K|%|bps|pp)?/gi;
+
   // Status / categorical: "CEO John Smith resigned" / "appointed as MD"
   const statusRe =
     /([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s+(?:was\s+)?(?:appointed|resigned|stepped down|elevated|promoted|became|serves? as|is)\s+(?:as\s+)?([^.:\n]{5,60})/gi;
@@ -94,7 +99,7 @@ function extractFactsWithHeuristics(doc: ParsedDocument): GroundedFact[] {
       re.lastIndex = 0;
       let m: RegExpExecArray | null;
       while ((m = re.exec(text)) !== null) {
-        const attr = m[1].trim().replace(/\s+/g, ' ');
+        const attr = canonicalAttribute(m[1]);
         const val = m[2].trim();
         if (attr.length < 5 || val.length < 1) continue;
         n++;
@@ -125,6 +130,42 @@ function extractFactsWithHeuristics(doc: ParsedDocument): GroundedFact[] {
           extractedAt: new Date().toISOString()
         });
       }
+    }
+
+    labeledMetricRe.lastIndex = 0;
+    let lm: RegExpExecArray | null;
+    while ((lm = labeledMetricRe.exec(text)) !== null) {
+      const attr = canonicalAttribute(lm[1]);
+      const valueMatch = lm[0].match(/\(?[\d,]+(?:\.\d+)?\)?\s*(?:crore|cr|lakh|million|billion|thousand|bn|mn|M|B|K|%|bps|pp)?/i);
+      const val = valueMatch?.[0].trim() || '';
+      if (!val) continue;
+      n++;
+      facts.push({
+        id: `fact-metric-${doc.id}-${n}`,
+        subject: entity,
+        entity,
+        predicate: attr,
+        attribute: attr,
+        value: val,
+        normalizedValue: parseNormalizedNumber(val),
+        valueType: 'numeric',
+        unit: detectUnit(val),
+        temporalScope: timePeriod,
+        timePeriod,
+        spatialScope: guessScope(text),
+        scope: guessScope(text),
+        evidence: {
+          documentId: doc.id,
+          documentName: doc.name,
+          pageNumber: page.pageNumber,
+          verbatimQuote: lm[0].trim(),
+          lineSnippet: lm[0].trim().substring(0, 100),
+          confidenceScore: 0.86
+        },
+        extractionStage: 'stage_a_structural',
+        groundingVerified: true,
+        extractedAt: new Date().toISOString()
+      });
     }
 
     // Status facts
@@ -185,6 +226,22 @@ function detectTimePeriod(text: string): string {
   return 'Not specified';
 }
 
+function canonicalAttribute(attribute: string): string {
+  const value = attribute.toLowerCase().replace(/\s+/g, ' ').trim();
+  if (value.includes('revenue')) return 'Revenue';
+  if (value.includes('ebitda')) return 'EBITDA';
+  if (value.includes('pat') || value.includes('profit after tax')) return 'PAT';
+  if (value.includes('shipment')) return 'Shipments';
+  if (value.includes('customer')) return 'Active Customers';
+  if (value.includes('pin') && value.includes('code')) return 'Pin-code Reach';
+  if (value.includes('tonnage')) return 'Freight Tonnage';
+  if (value.includes('fleet')) return 'Fleet Size';
+  if (value.includes('team')) return 'Team Size';
+  if (value.includes('gateway')) return 'Gateways';
+  if (value.includes('center') || value.includes('centre')) return 'Service Centers';
+  return attribute.trim().replace(/\s+/g, ' ');
+}
+
 function guessEntity(filename: string, text: string): string {
   if (/delhivery/i.test(filename)) return 'Delhivery Limited';
   if (/economic survey|rbi|imf|india/i.test(filename)) return 'Government / Reserve Bank of India';
@@ -215,7 +272,7 @@ function detectUnit(val: string): string {
 function parseNormalizedNumber(valStr: string): number {
   const clean = valStr.replace(/[^0-9.]/g, '');
   let num = parseFloat(clean) || 0;
-  if (/crore/i.test(valStr)) num *= 1e7;
+  if (/crore|cr\b/i.test(valStr)) num *= 1e7;
   else if (/lakh/i.test(valStr)) num *= 1e5;
   else if (/billion|bn/i.test(valStr)) num *= 1e9;
   else if (/million|mn/i.test(valStr)) num *= 1e6;

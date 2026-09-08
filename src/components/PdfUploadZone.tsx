@@ -4,7 +4,7 @@ import { parsePdfFile } from '../lib/pdfParser';
 import { ParsedDocument } from '../types/fact';
 
 interface PdfUploadZoneProps {
-  onDocumentUploaded: (doc: ParsedDocument) => void;
+  onDocumentUploaded: (doc: ParsedDocument) => void | Promise<void>;
   isProcessing: boolean;
 }
 
@@ -29,8 +29,8 @@ export const PdfUploadZone: React.FC<PdfUploadZoneProps> = ({
       setUploadStatus(`Parsing ${file.name}...`);
       try {
         const parsedDoc = await parsePdfFile(file);
-        onDocumentUploaded(parsedDoc);
-        setUploadStatus(`Extracted facts from ${file.name}!`);
+        await onDocumentUploaded(parsedDoc);
+        setUploadStatus(`Processed ${file.name}!`);
         setTimeout(() => setUploadStatus(null), 4000);
       } catch (err) {
         console.error('PDF Processing Error:', err);
