@@ -14,38 +14,15 @@ export const FactMatrix: React.FC<FactMatrixProps> = ({
   onSelectRelationship
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'CLAIMS' | 'RELATIONSHIPS'>('CLAIMS');
-  const [stageFilter, setStageFilter] = useState<'ALL' | 'stage_a_structural' | 'stage_b_llm'>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'CORROBORATED' | 'CONTRADICTION' | 'RECONCILED' | 'FAILURE'>('ALL');
+  const [stageFilter, setStageFilter] = useState<'ALL' | 'stage_a_structural' | 'stage_b_llm'>('ALL');
 
-  // Filter individual claims
-  const filteredFacts = facts.filter((fact) => {
-    const q = searchQuery.toLowerCase();
-    const matchesSearch =
-      fact.attribute.toLowerCase().includes(q) ||
-      fact.entity.toLowerCase().includes(q) ||
-      fact.value.toLowerCase().includes(q) ||
-      fact.evidence.verbatimQuote.toLowerCase().includes(q) ||
-      fact.evidence.documentName.toLowerCase().includes(q);
-
-    if (!matchesSearch) return false;
-
-    if (stageFilter !== 'ALL') {
-      const stage = fact.extractionStage || 'stage_a_structural';
-      if (stage !== stageFilter) return false;
-    }
-
-    return true;
-  });
-
-  // Filter relationships
   const filteredRelationships = relationships.filter((rel) => {
-    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      rel.title.toLowerCase().includes(q) ||
-      rel.factA.entity.toLowerCase().includes(q) ||
-      rel.factA.attribute.toLowerCase().includes(q) ||
-      rel.reasoning.toLowerCase().includes(q);
+      rel.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rel.factA.entity.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rel.factA.attribute.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rel.reasoning.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
 
@@ -54,53 +31,34 @@ export const FactMatrix: React.FC<FactMatrixProps> = ({
     if (statusFilter === 'RECONCILED') if (rel.relationshipType !== 'RECONCILED_BY_CONTEXT') return false;
     if (statusFilter === 'FAILURE') if (rel.relationshipType !== 'FAILURE_HANDLED') return false;
 
+    if (stageFilter !== 'ALL') {
+      const stageA = rel.factA.extractionStage || 'stage_a_structural';
+      if (stageA !== stageFilter) return false;
+    }
+
     return true;
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl mb-8 text-slate-100 space-y-6">
+    <div className="w-full max-w-7xl mx-auto rounded-[2rem] border-[1.6px] border-[#E5E5E9] bg-white p-6 shadow-xl mb-8">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-            <Filter className="w-4 h-4 text-emerald-400" />
-            Grounded Fact Knowledge Matrix ({facts.length} Claims Total)
+          <h2 className="text-base font-bold text-[#2B2B2B] flex items-center gap-2">
+            <Filter className="w-4 h-4 text-emerald-600" />
+            Cross-Document Fact Knowledge Matrix
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Searchable repository of all extracted claims, raw vs. normalized values, verbatim quotes, and provenance
+          <p className="text-xs text-[#838385] mt-0.5">
+            Searchable grounded claims, raw vs. normalized values, stage tags, and verbatim quotes
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          {/* View Mode Toggle */}
-          <div className="flex items-center p-1 bg-slate-950 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setViewMode('CLAIMS')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                viewMode === 'CLAIMS'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Extracted Claims ({facts.length})
-            </button>
-            <button
-              onClick={() => setViewMode('RELATIONSHIPS')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                viewMode === 'RELATIONSHIPS'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Reconciled Pairs ({relationships.length})
-            </button>
-          </div>
-
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           {/* Stage Filter */}
           <select
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value as any)}
-            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+            className="px-3 py-2 bg-[#F4F4FB] border border-[#E5E5E9] rounded-xl text-xs font-semibold text-[#2B2B2B] focus:outline-none focus:border-emerald-600 transition"
           >
             <option value="ALL">All Stages</option>
             <option value="stage_a_structural">Stage A: Structural Regex</option>
@@ -108,193 +66,179 @@ export const FactMatrix: React.FC<FactMatrixProps> = ({
           </select>
 
           {/* Search Box */}
-          <div className="relative w-full sm:w-60">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#838385]" />
             <input
               type="text"
-              placeholder="Search claim, value, or quote..."
+              placeholder="Search metric, entity, or quote..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-full text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+              className="w-full pl-9 pr-4 py-2 bg-[#F4F4FB] border border-[#E5E5E9] rounded-full text-xs text-[#2B2B2B] placeholder-[#838385] focus:outline-none focus:border-emerald-600 transition"
             />
           </div>
         </div>
       </div>
 
-      {/* View 1: Extracted Claims Table */}
-      {viewMode === 'CLAIMS' && (
-        <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900 text-slate-400 font-bold border-b border-slate-800 uppercase tracking-wider">
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[
+          { id: 'ALL', label: 'All Matches' },
+          { id: 'CORROBORATED', label: '🟢 Corroborated' },
+          { id: 'CONTRADICTION', label: '🔴 Contradiction' },
+          { id: 'RECONCILED', label: '🟡 Context Reconciled' },
+          { id: 'FAILURE', label: '🔵 Handled Failure' }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id as any)}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition border ${
+              statusFilter === tab.id
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/10'
+                : 'bg-[#F4F4FB] text-[#717077] border-[#E5E5E9] hover:bg-slate-100'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Relationships Table */}
+      <div className="overflow-x-auto rounded-2xl border border-[#E5E5E9]">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-[#F4F4FB] text-[#717077] font-bold border-b border-[#E5E5E9] uppercase tracking-wider">
+            <tr>
+              <th className="p-3.5">Status & Stage</th>
+              <th className="p-3.5">Entity & Metric</th>
+              <th className="p-3.5">Raw vs Normalized Values</th>
+              <th className="p-3.5">Confidence & Grounding</th>
+              <th className="p-3.5">Verbatim Source Quote</th>
+              <th className="p-3.5 text-right">Inspect</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E5E5E9] bg-white">
+            {filteredRelationships.length === 0 ? (
               <tr>
-                <th className="p-3.5">ID & Stage</th>
-                <th className="p-3.5">Entity & Attribute</th>
-                <th className="p-3.5">Raw & Normalized Values</th>
-                <th className="p-3.5">Scope & Time</th>
-                <th className="p-3.5">Verbatim Source Quote</th>
-                <th className="p-3.5 text-right">Provenance</th>
+                <td colSpan={6} className="p-6 text-center text-[#717077]">
+                  No matching claims found for current filter.
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80 bg-slate-950 text-slate-200">
-              {filteredFacts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-400">
-                    No claims match current search query or stage filter.
-                  </td>
-                </tr>
-              ) : (
-                filteredFacts.map((fact) => {
-                  const confPct = (fact.evidence.confidenceScore * 100).toFixed(0);
+            ) : (
+              filteredRelationships.map((rel) => {
+                const { factA, factB, relationshipType } = rel;
 
-                  return (
-                    <tr key={fact.id} className="hover:bg-slate-900/60 transition">
-                      {/* ID & Stage */}
-                      <td className="p-3.5 space-y-1">
-                        <div className="font-mono text-[11px] font-bold text-emerald-400">{fact.id}</div>
-                        <div className="font-mono text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 inline-block">
-                          {fact.extractionStage || 'stage_a_structural'}
-                        </div>
-                      </td>
+                let statusBadge = (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Corroborated
+                  </span>
+                );
 
-                      {/* Entity & Attribute */}
-                      <td className="p-3.5">
-                        <div className="font-bold text-slate-100">{fact.attribute}</div>
-                        <div className="text-[11px] text-slate-400">{fact.entity}</div>
-                      </td>
-
-                      {/* Raw vs Normalized */}
-                      <td className="p-3.5 space-y-1">
-                        <div className="font-mono font-bold text-slate-100">{fact.value}</div>
-                        {typeof fact.normalizedValue === 'number' && (
-                          <div className="font-mono text-[11px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/80 inline-block">
-                            Norm: {fact.normalizedValue.toLocaleString()} {fact.unit || ''}
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Scope & Time */}
-                      <td className="p-3.5 text-[11px] space-y-1">
-                        <div className="text-slate-300 font-semibold">{fact.timePeriod || 'No time period'}</div>
-                        <div className="text-slate-500 font-mono">{fact.scope || 'General'}</div>
-                      </td>
-
-                      {/* Byte-for-Byte Verbatim Quote */}
-                      <td className="p-3.5 max-w-sm">
-                        <div className="font-mono text-[11px] text-slate-300 italic bg-slate-900 p-2.5 rounded-lg border border-slate-800 line-clamp-2">
-                          "{fact.evidence.verbatimQuote}"
-                        </div>
-                      </td>
-
-                      {/* Provenance */}
-                      <td className="p-3.5 text-right font-mono text-[11px] space-y-1">
-                        <div className="flex items-center justify-end gap-1 text-slate-300 font-semibold">
-                          <FileText className="w-3 h-3 text-emerald-400" />
-                          <span>P{fact.evidence.pageNumber}: {fact.evidence.documentName}</span>
-                        </div>
-                        <div className="text-emerald-400 font-bold flex items-center justify-end gap-1">
-                          <Lock className="w-2.5 h-2.5" /> {confPct}% Conf.
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* View 2: Relationships Table */}
-      {viewMode === 'RELATIONSHIPS' && (
-        <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900 text-slate-400 font-bold border-b border-slate-800 uppercase tracking-wider">
-              <tr>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5">Metric & Entity</th>
-                <th className="p-3.5">Raw Values Comparison</th>
-                <th className="p-3.5">System Reasoning</th>
-                <th className="p-3.5 text-right">Inspect</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80 bg-slate-950 text-slate-200">
-              {filteredRelationships.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-400">
-                    No cross-document relationships match current query.
-                  </td>
-                </tr>
-              ) : (
-                filteredRelationships.map((rel) => {
-                  const { factA, factB, relationshipType } = rel;
-
-                  let statusBadge = (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Corroborated
+                if (relationshipType === 'CONTRADICTION') {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                      <AlertTriangle className="w-3 h-3 text-rose-600" /> Contradiction
                     </span>
                   );
-
-                  if (relationshipType === 'CONTRADICTION') {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
-                        <AlertTriangle className="w-3 h-3 text-rose-400" /> Contradiction
-                      </span>
-                    );
-                  } else if (relationshipType === 'RECONCILED_BY_CONTEXT') {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
-                        <Scale className="w-3 h-3 text-amber-400" /> Reconciled
-                      </span>
-                    );
-                  } else if (relationshipType === 'FAILURE_HANDLED') {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-950 text-sky-300 border border-sky-800">
-                        <ShieldAlert className="w-3 h-3 text-sky-400" /> Handled
-                      </span>
-                    );
-                  }
-
-                  return (
-                    <tr
-                      key={rel.id}
-                      className="hover:bg-slate-900/60 transition cursor-pointer"
-                      onClick={() => onSelectRelationship(rel)}
-                    >
-                      <td className="p-3.5 whitespace-nowrap">{statusBadge}</td>
-
-                      <td className="p-3.5">
-                        <div className="font-bold text-slate-100">{factA.attribute}</div>
-                        <div className="text-[11px] text-slate-400">{factA.entity}</div>
-                      </td>
-
-                      <td className="p-3.5 font-mono space-y-1">
-                        <div className="font-bold text-slate-100">Doc A: {factA.value}</div>
-                        {factB && <div className="text-emerald-400">Doc B: {factB.value}</div>}
-                      </td>
-
-                      <td className="p-3.5 max-w-sm text-[11px] text-slate-300 line-clamp-2">
-                        {rel.reasoning}
-                      </td>
-
-                      <td className="p-3.5 text-right whitespace-nowrap">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectRelationship(rel);
-                          }}
-                          className="px-3 py-1 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition text-[11px] font-bold"
-                        >
-                          Inspect
-                        </button>
-                      </td>
-                    </tr>
+                } else if (relationshipType === 'RECONCILED_BY_CONTEXT') {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                      <Scale className="w-3 h-3 text-amber-600" /> Reconciled
+                    </span>
                   );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+                } else if (relationshipType === 'FAILURE_HANDLED') {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                      <ShieldAlert className="w-3 h-3 text-sky-600" /> Handled
+                    </span>
+                  );
+                }
+
+                const confidencePct = (factA.evidence.confidenceScore * 100).toFixed(0);
+                const confidenceLabel =
+                  factA.evidence.confidenceScore >= 0.90
+                    ? 'High'
+                    : factA.evidence.confidenceScore >= 0.75
+                    ? 'Medium'
+                    : 'Low / Flagged';
+
+                return (
+                  <tr
+                    key={rel.id}
+                    className="hover:bg-slate-50/80 transition cursor-pointer"
+                    onClick={() => onSelectRelationship(rel)}
+                  >
+                    {/* Status & Stage */}
+                    <td className="p-3.5 space-y-1.5">
+                      <div>{statusBadge}</div>
+                      <div className="font-mono text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 inline-block">
+                        {factA.extractionStage || 'stage_a_structural'}
+                      </div>
+                    </td>
+
+                    {/* Entity & Metric */}
+                    <td className="p-3.5">
+                      <div className="font-bold text-[#2B2B2B]">{factA.attribute}</div>
+                      <div className="text-[11px] text-[#717077]">{factA.entity}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        {factA.timePeriod || 'No time bound'}
+                      </div>
+                    </td>
+
+                    {/* Dual Values: Raw vs Normalized */}
+                    <td className="p-3.5 space-y-1">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">Raw:</span>
+                        <span className="font-bold text-[#111111]">{factA.value}</span>
+                      </div>
+                      {typeof factA.normalizedValue === 'number' && (
+                        <div className="font-mono text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block">
+                          Norm: {factA.normalizedValue.toLocaleString()} {factA.unit || ''}
+                        </div>
+                      )}
+                      {factB && (
+                        <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">vs Raw B:</span>
+                          <span className="font-bold text-[#111111]">{factB.value}</span>
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Confidence & Grounding */}
+                    <td className="p-3.5 space-y-1">
+                      <div className="font-semibold text-[11px] text-emerald-700 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        {confidencePct}% ({confidenceLabel})
+                      </div>
+                      <div className="text-[10px] text-slate-600 font-mono flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5 text-emerald-600" /> Grounding Verified
+                      </div>
+                    </td>
+
+                    {/* Byte-for-Byte Monospace Verbatim Quote */}
+                    <td className="p-3.5 max-w-sm">
+                      <div className="font-mono text-[11px] text-slate-700 italic bg-slate-50 p-2 rounded border border-slate-200 line-clamp-2">
+                        "{factA.evidence.verbatimQuote}"
+                      </div>
+                    </td>
+
+                    {/* Action */}
+                    <td className="p-3.5 text-right whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectRelationship(rel);
+                        }}
+                        className="px-3 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition text-[11px] font-bold"
+                      >
+                        Inspect
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

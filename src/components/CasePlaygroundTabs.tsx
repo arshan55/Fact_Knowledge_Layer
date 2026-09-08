@@ -13,28 +13,29 @@ export const CasePlaygroundTabs: React.FC<CasePlaygroundTabsProps> = ({
   activeCaseId,
   onSelectCase
 }) => {
+  // Pick representative relationship for each case type from active workspace
   const case1 = relationships.find(r => r.relationshipType === 'CORROBORATED') ?? relationships[0];
   const case2 = relationships.find(r => r.relationshipType === 'CONTRADICTION') ?? relationships[1];
   const case3 = relationships.find(r => r.relationshipType === 'RECONCILED_BY_CONTEXT') ?? relationships[2];
   const case4 = relationships.find(r => r.relationshipType === 'FAILURE_HANDLED') ?? relationships[3];
 
   const cards = [
-    { num: 1, label: 'Corroboration', rel: case1, icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />, badge: 'bg-emerald-950 text-emerald-300 border-emerald-800' },
-    { num: 2, label: 'Contradiction', rel: case2, icon: <AlertTriangle className="w-4 h-4 text-rose-400" />, badge: 'bg-rose-950 text-rose-300 border-rose-800' },
-    { num: 3, label: 'Context Reconciled', rel: case3, icon: <Scale className="w-4 h-4 text-amber-400" />, badge: 'bg-amber-950 text-amber-300 border-amber-800' },
-    { num: 4, label: 'Handled Failure', rel: case4, icon: <ShieldAlert className="w-4 h-4 text-sky-400" />, badge: 'bg-sky-950 text-sky-300 border-sky-800' },
+    { num: 1, label: 'Corroboration', rel: case1, icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" />, badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    { num: 2, label: 'Contradiction', rel: case2, icon: <AlertTriangle className="w-4 h-4 text-rose-600" />, badge: 'bg-rose-50 text-rose-700 border-rose-200' },
+    { num: 3, label: 'Context Reconciled', rel: case3, icon: <Scale className="w-4 h-4 text-amber-500" />, badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+    { num: 4, label: 'Handled Failure', rel: case4, icon: <ShieldAlert className="w-4 h-4 text-sky-600" />, badge: 'bg-sky-50 text-sky-700 border-sky-200' },
   ].filter(c => Boolean(c.rel));
 
   return (
-    <div className="w-full text-slate-100">
+    <div className="w-full">
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-[14px] font-bold text-slate-200">
+          <Sparkles className="w-4 h-4 text-emerald-600" />
+          <h2 className="text-[14px] font-bold text-[#374151]">
             Featured Workspace Cases ({relationships.length} Total)
           </h2>
         </div>
-        <span className="text-[12px] text-slate-400">Click a card to inspect evidence</span>
+        <span className="text-[12px] text-[#9CA3AF]">Click a card to inspect evidence</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -46,10 +47,10 @@ export const CasePlaygroundTabs: React.FC<CasePlaygroundTabsProps> = ({
             <button
               key={rel.id}
               onClick={() => onSelectCase(rel.id)}
-              className={`text-left p-4 rounded-xl transition-all border bg-slate-900/90 ${
+              className={`text-left p-4 rounded-xl transition-all border-[1.6px] bg-white ${
                 isSelected
-                  ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-lg shadow-emerald-950'
-                  : 'border-slate-800 hover:border-emerald-500/40 hover:bg-slate-800/60'
+                  ? 'border-emerald-500 ring-2 ring-emerald-500/15 shadow-md shadow-emerald-600/5'
+                  : 'border-[#E5E5E9] hover:border-emerald-300 hover:shadow-sm'
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-3">
@@ -60,12 +61,12 @@ export const CasePlaygroundTabs: React.FC<CasePlaygroundTabsProps> = ({
               </div>
 
               {/* Title */}
-              <h3 className="text-[14px] font-bold text-slate-100 mb-1.5 line-clamp-1">
+              <h3 className="text-[14px] font-bold text-[#111111] mb-1.5 line-clamp-1">
                 {rel.title}
               </h3>
 
               {/* Description */}
-              <p className="text-[13px] text-slate-400 line-clamp-2 leading-relaxed">
+              <p className="text-[13px] text-[#6B7280] line-clamp-2 leading-relaxed">
                 {rel.reasoning}
               </p>
             </button>

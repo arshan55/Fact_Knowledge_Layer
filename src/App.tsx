@@ -81,6 +81,14 @@ export function App() {
     }
   };
 
+  const handleResetStarterData = () => {
+    setWorkspaces(STARTER_WORKSPACES);
+    setActiveWorkspaceId(STARTER_WORKSPACES[0]?.id ?? '');
+    setActiveRelationshipId(STARTER_WORKSPACES[0]?.relationships[0]?.id ?? '');
+    setActiveTab('overview');
+    setSpotlightRel(null);
+  };
+
   const handleDocumentUploaded = async (newDoc: ParsedDocument) => {
     setIsProcessing(true);
     setProcessingMsg(`Extracting & verifying claims from ${newDoc.name}…`);
@@ -135,7 +143,7 @@ export function App() {
           title={`${activeWorkspace.emoji} ${activeWorkspace.name} — ${tabMeta.title}`}
           subtitle={tabMeta.subtitle}
           onExportJson={handleExportJson}
-          onResetStarterData={() => {}}
+          onResetStarterData={handleResetStarterData}
           onOpenSettings={() => setIsSettingsOpen(true)}
           isCustomKeyActive={apiKey.trim().length > 5}
           relationshipCount={relationships.length}

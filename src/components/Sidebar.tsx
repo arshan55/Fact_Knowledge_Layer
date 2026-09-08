@@ -34,15 +34,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-[240px] bg-[#0F172A] border-r border-[#1E293B] flex flex-col shrink-0 min-h-screen text-slate-200">
+    <aside className="w-[240px] bg-white border-r-[1.6px] border-[#E5E5E9] flex flex-col shrink-0 min-h-screen">
       {/* Brand */}
-      <div className="px-5 py-4 border-b border-[#1E293B] flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-950 shrink-0">
+      <div className="px-5 py-4 border-b border-[#E5E5E9] flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0">
           <Layers className="w-4 h-4" />
         </div>
         <div>
-          <div className="text-[13px] font-bold text-slate-100 leading-tight">Fact Layer</div>
-          <div className="text-[11px] text-slate-400 leading-tight">Knowledge Grounding</div>
+          <div className="text-[13px] font-bold text-[#111111] leading-tight">Fact Layer</div>
+          <div className="text-[11px] text-[#9CA3AF] leading-tight">Superjoin Assignment</div>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="px-3 pt-3 pb-2">
         <button
           onClick={onUploadClick}
-          className="w-full py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold flex items-center justify-center gap-2 shadow-md shadow-emerald-950 transition-all"
+          className="w-full py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-semibold flex items-center justify-center gap-2 shadow-sm transition-all"
         >
           <Upload className="w-3.5 h-3.5" />
           Upload PDF
@@ -58,8 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Nav */}
-      <nav className="px-2 py-2 border-b border-[#1E293B]">
-        <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Views</div>
+      <nav className="px-2 py-2 border-b border-[#E5E5E9]">
+        <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF]">Views</div>
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -69,17 +69,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all mb-0.5 ${
                 isActive
-                  ? 'bg-emerald-950/80 text-emerald-400 font-semibold border border-emerald-800/60'
-                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                  : 'text-[#4B5563] hover:bg-[#F4F4FB] hover:text-[#111111]'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-600' : 'text-[#9CA3AF]'}`} />
                 {item.label}
               </div>
               {item.badge && (
-                <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                  isActive ? 'bg-emerald-900 text-emerald-300' : 'bg-slate-800 text-slate-400'
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  isActive ? 'bg-emerald-200/60 text-emerald-800' : 'bg-[#F0F0F0] text-[#6B7280]'
                 }`}>
                   {item.badge}
                 </span>
@@ -92,10 +92,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Workspaces */}
       <div className="flex-1 px-2 py-3 overflow-y-auto">
         <div className="flex items-center justify-between px-3 mb-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Workspaces</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF]">Workspaces</span>
           <button
             onClick={onCreateWorkspace}
-            className="w-5 h-5 rounded-full bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-300 flex items-center justify-center transition"
+            className="w-5 h-5 rounded-full bg-emerald-100 hover:bg-emerald-500 hover:text-white text-emerald-600 flex items-center justify-center transition"
           >
             <Plus className="w-3 h-3" />
           </button>
@@ -116,26 +116,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onMouseLeave={() => setHoveredWs(null)}
                   onClick={() => onSwitchWorkspace(ws.id)}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
-                    isActive ? 'bg-slate-800 border border-slate-700' : 'hover:bg-slate-800/40'
+                    isActive ? 'bg-[#F4F4FB] border border-[#E5E5E9]' : 'hover:bg-[#F9F9F9]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-lg shrink-0">{ws.emoji}</span>
                     <div className="min-w-0">
-                      <div className={`text-[13px] font-semibold truncate ${isActive ? 'text-slate-100' : 'text-slate-300'}`}>
+                      <div className={`text-[13px] font-semibold truncate ${isActive ? 'text-[#111111]' : 'text-[#374151]'}`}>
                         {ws.name}
                       </div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-[11px] text-[#9CA3AF]">
                         {ws.documents.length} doc{ws.documents.length !== 1 ? 's' : ''} · {ws.facts.length} facts
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-1">
-                    {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                    {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
                     {!ws.isDemo && hoveredWs === ws.id && !isActive && (
                       <button
                         onClick={e => { e.stopPropagation(); onDeleteWorkspace(ws.id); }}
-                        className="p-1 rounded-lg hover:bg-red-950 text-slate-400 hover:text-red-400 transition"
+                        className="p-1 rounded-lg hover:bg-red-50 text-[#9CA3AF] hover:text-red-500 transition"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -150,15 +150,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Engine Status */}
       <div className="p-3">
-        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+        <div className="p-3 rounded-xl bg-[#F9FAFB] border border-[#E5E5E9]">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Engine</span>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF]">Engine</span>
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
               Active
             </span>
           </div>
-          <div className="text-[12px] text-slate-400">Offline heuristic AI engine</div>
+          <div className="text-[12px] text-[#6B7280]">Offline heuristic AI · 0 API calls</div>
         </div>
       </div>
     </aside>

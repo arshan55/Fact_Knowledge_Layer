@@ -48,7 +48,7 @@ export const PdfUploadZone: React.FC<PdfUploadZoneProps> = ({
             Upload Custom PDF Documents
           </h2>
           <p className="text-xs text-[#838385] mt-0.5">
-            Select or drag &amp; drop PDFs to dynamically extract grounded facts and page quotes
+            Select or drag & drop PDFs to dynamically extract grounded facts and page quotes
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export const PdfUploadZone: React.FC<PdfUploadZoneProps> = ({
               <Upload className="w-6 h-6" />
             </div>
             <div className="text-xs font-bold text-[#2B2B2B]">
-              Click to select PDF or drag &amp; drop file here
+              Click to select PDF or drag & drop file here
             </div>
             <span className="text-[11px] text-[#717077]">
               Extracts text, preserves page numbers, attaches verbatim quotes automatically

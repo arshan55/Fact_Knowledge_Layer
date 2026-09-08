@@ -21,15 +21,15 @@ const StatCard: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg hover:border-emerald-500/40 transition-all text-slate-100"
+    className="rounded-2xl border border-[#E5E5E9] bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all"
   >
     <div className="flex items-center justify-between mb-3">
-      <span className={`text-[11px] font-bold uppercase tracking-wider ${accent}`}>{label}</span>
+      <span className={`text-[11px] font-bold uppercase tracking-[0.08em] ${accent}`}>{label}</span>
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${bg}`}>
         {icon}
       </div>
     </div>
-    <div className="text-[32px] font-extrabold text-slate-100 leading-none font-mono">{value}</div>
+    <div className="text-[32px] font-extrabold text-[#111111] leading-none">{value}</div>
   </motion.div>
 );
 
@@ -47,28 +47,28 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Documents" value={documents.length}
-          icon={<FileText className="w-4 h-4 text-emerald-400" />} accent="text-emerald-400" bg="bg-emerald-950/80 border border-emerald-800" />
+          icon={<FileText className="w-4 h-4 text-emerald-600" />} accent="text-emerald-600" bg="bg-emerald-50" />
         <StatCard label="Extracted Facts" value={facts.length}
-          icon={<Layers className="w-4 h-4 text-indigo-400" />} accent="text-indigo-400" bg="bg-indigo-950/80 border border-indigo-800" />
+          icon={<Layers className="w-4 h-4 text-indigo-500" />} accent="text-indigo-500" bg="bg-indigo-50" />
         <StatCard label="Relationships" value={relationships.length}
-          icon={<TrendingUp className="w-4 h-4 text-violet-400" />} accent="text-violet-400" bg="bg-violet-950/80 border border-violet-800" />
+          icon={<TrendingUp className="w-4 h-4 text-violet-500" />} accent="text-violet-500" bg="bg-violet-50" />
         <StatCard label="Contradictions" value={contradictions}
-          icon={<AlertTriangle className="w-4 h-4 text-rose-400" />} accent="text-rose-400" bg="bg-rose-950/80 border border-rose-800" />
+          icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} accent="text-rose-500" bg="bg-rose-50" />
       </div>
 
       {/* Status breakdown */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Corroborated',      val: corroborated,   icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />, color: 'bg-emerald-950/60 border-emerald-800/80 text-emerald-300' },
-          { label: 'Contradictions',    val: contradictions, icon: <AlertTriangle className="w-4 h-4 text-rose-400" />,   color: 'bg-rose-950/60 border-rose-800/80 text-rose-300' },
-          { label: 'Context Reconciled',val: reconciled,     icon: <Scale className="w-4 h-4 text-amber-400" />,         color: 'bg-amber-950/60 border-amber-800/80 text-amber-300' },
-          { label: 'Handled Failures',  val: failures,       icon: <ShieldAlert className="w-4 h-4 text-sky-400" />,     color: 'bg-sky-950/60 border-sky-800/80 text-sky-300' },
+          { label: 'Corroborated',      val: corroborated,   icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" />, color: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
+          { label: 'Contradictions',    val: contradictions, icon: <AlertTriangle className="w-4 h-4 text-rose-500" />,   color: 'bg-rose-50 border-rose-200 text-rose-800' },
+          { label: 'Context Reconciled',val: reconciled,     icon: <Scale className="w-4 h-4 text-amber-500" />,         color: 'bg-amber-50 border-amber-200 text-amber-800' },
+          { label: 'Handled Failures',  val: failures,       icon: <ShieldAlert className="w-4 h-4 text-sky-500" />,     color: 'bg-sky-50 border-sky-200 text-sky-800' },
         ].map((item, i) => (
           <div key={i} className={`flex items-center justify-between px-4 py-3 rounded-xl border ${item.color}`}>
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               {item.icon} {item.label}
             </div>
-            <span className="text-[18px] font-bold font-mono">{item.val}</span>
+            <span className="text-[18px] font-bold">{item.val}</span>
           </div>
         ))}
       </div>
